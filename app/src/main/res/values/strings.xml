@@ -5,5 +5,6 @@
     <string name="terrain_map">Terrain Map</string>
     <string name="satelite_map">Satelite Map</string>
     <string name="hybrid_map">Hybrid Map</string>
+    <string name="dropped_pin">Dropped Pin</string>
 
 </resources>
