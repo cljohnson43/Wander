@@ -1,5 +1,7 @@
 package com.example.wander
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.icu.text.TimeZoneFormat
 import androidx.appcompat.app.AppCompatActivity
@@ -7,6 +9,8 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -19,6 +23,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private val TAG = MapsActivity::class.java.simpleName
     private lateinit var map: GoogleMap
+    private val REQUEST_FINE_LOCATION_CODE = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,17 +50,19 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         map.addMarker(MarkerOptions().position(sydney).title("Marker in Sydney"))
         map.moveCamera(CameraUpdateFactory.newLatLng(sydney))
 
-        val groundOverlay = GroundOverlayOptions().image(BitmapDescriptorFactory.fromResource(R.drawable.android))
-            .position(sydney, 100f)
+        val groundOverlay =
+            GroundOverlayOptions().image(BitmapDescriptorFactory.fromResource(R.drawable.android))
+                .position(sydney, 100f)
         map.addGroundOverlay(groundOverlay)
 
         setMapLongClick(map)
         setPoiClick(map)
         setMapStyle(map)
+        enableMyLocation()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        val view = menuInflater.inflate(R.menu.map_options, menu)
+        menuInflater.inflate(R.menu.map_options, menu)
         return true
     }
 
@@ -109,6 +116,39 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         } catch (e: Resources.NotFoundException) {
             Log.e(TAG, "can't find style file: Error: ", e)
+        }
+    }
+
+    fun isPermissionGranted(): Boolean {
+        return ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    fun enableMyLocation() {
+        if (isPermissionGranted()) {
+            map.isMyLocationEnabled = true
+
+        } else {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                REQUEST_FINE_LOCATION_CODE
+            )
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        if (requestCode == REQUEST_FINE_LOCATION_CODE &&
+            grantResults.size > 0 &&
+            grantResults[0] == PackageManager.PERMISSION_GRANTED
+        ) {
+            enableMyLocation()
         }
     }
 }
