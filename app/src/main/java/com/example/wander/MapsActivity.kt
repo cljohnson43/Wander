@@ -12,9 +12,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MapStyleOptions
-import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.*
 import java.util.*
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -46,6 +44,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val sydney = LatLng(-34.0, 151.0)
         map.addMarker(MarkerOptions().position(sydney).title("Marker in Sydney"))
         map.moveCamera(CameraUpdateFactory.newLatLng(sydney))
+
+        val groundOverlay = GroundOverlayOptions().image(BitmapDescriptorFactory.fromResource(R.drawable.android))
+            .position(sydney, 100f)
+        map.addGroundOverlay(groundOverlay)
 
         setMapLongClick(map)
         setPoiClick(map)
@@ -80,6 +82,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     .position(latLng)
                     .title(getString(R.string.dropped_pin))
                     .snippet(snippet)
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
             )
         }
     }
@@ -98,7 +101,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     fun setMapStyle(map: GoogleMap) {
         try {
-            val success = map.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.map_style))
+            val success =
+                map.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.map_style))
 
             if (!success) {
                 Log.e(TAG, "Style parsing failed")
