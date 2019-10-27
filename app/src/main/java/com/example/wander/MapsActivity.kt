@@ -1,8 +1,10 @@
 package com.example.wander
 
+import android.content.res.Resources
 import android.icu.text.TimeZoneFormat
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 
@@ -11,11 +13,13 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.MarkerOptions
 import java.util.*
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
+    private val TAG = MapsActivity::class.java.simpleName
     private lateinit var map: GoogleMap
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,6 +49,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         setMapLongClick(map)
         setPoiClick(map)
+        setMapStyle(map)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -90,5 +95,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         }
     }
-}
+
+    fun setMapStyle(map: GoogleMap) {
+        try {
+            val success = map.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.map_style))
+
+            if (!success) {
+                Log.e(TAG, "Style parsing failed")
+            }
+        } catch (e: Resources.NotFoundException) {
+            Log.e(TAG, "can't find style file: Error: ", e)
+        }
+    }
 }
