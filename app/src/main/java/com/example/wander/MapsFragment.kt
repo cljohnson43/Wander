@@ -11,6 +11,8 @@ import android.view.ViewGroup
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
+import com.example.wander.viewmodels.PlacesViewModel
 
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -24,6 +26,12 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
     private val TAG = MapsFragment::class.java.simpleName
     private lateinit var map: GoogleMap
     private val REQUEST_FINE_LOCATION_CODE = 0
+
+    private val viewModel: PlacesViewModel by lazy {
+        ViewModelProvider(requireActivity(), ViewModelProvider.NewInstanceFactory()).get(
+            PlacesViewModel::class.java
+        )
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -56,7 +64,6 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         map = googleMap
 
         val sydney = LatLng(-34.0, 151.0)
-        map.addMarker(MarkerOptions().position(sydney).title("Marker in Sydney"))
         map.moveCamera(CameraUpdateFactory.newLatLng(sydney))
 
         val groundOverlay =
@@ -68,6 +75,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         setPoiClick(map)
         setMapStyle(map)
         enableMyLocation()
+        displayMarkers(map)
     }
 
     /**
@@ -102,6 +110,8 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
                     .snippet(snippet)
                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
             )
+
+            viewModel.addPlace(latLng)
         }
     }
 
@@ -165,6 +175,20 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
             grantResults[0] == PackageManager.PERMISSION_GRANTED
         ) {
             enableMyLocation()
+        }
+    }
+
+    fun displayMarkers(map: GoogleMap) {
+        val places = viewModel.places
+
+        if (places.size > 0) {
+            places.forEach { place ->
+                map.addMarker(
+                    MarkerOptions()
+                        .position(place)
+                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
+                )
+            }
         }
     }
 }
