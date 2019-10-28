@@ -3,14 +3,14 @@ package com.example.wander
 import android.Manifest
 import android.content.pm.PackageManager
 import android.content.res.Resources
-import android.icu.text.TimeZoneFormat
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.view.Menu
-import android.view.MenuItem
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -19,19 +19,28 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import java.util.*
 
-class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
+class MapsFragment : Fragment(), OnMapReadyCallback {
 
-    private val TAG = MapsActivity::class.java.simpleName
+    private val TAG = MapsFragment::class.java.simpleName
     private lateinit var map: GoogleMap
     private val REQUEST_FINE_LOCATION_CODE = 0
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_maps)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        val view = inflater.inflate(R.layout.fragment_maps, container, false)
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        val mapFragment = supportFragmentManager
-            .findFragmentById(R.id.map) as SupportMapFragment
+        val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
+
+        return view
+    }
+
+    override fun onStart() {
+        super.onStart()
     }
 
     /**
@@ -61,21 +70,23 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         enableMyLocation()
     }
 
+    /**
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.map_options, menu)
-        return true
+    requireActivity().menuInflater.inflate(R.menu.map_options, menu)
+    return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.normal_map -> map.mapType = GoogleMap.MAP_TYPE_NORMAL
-            R.id.terrain_map -> map.mapType = GoogleMap.MAP_TYPE_TERRAIN
-            R.id.satelite_map -> map.mapType = GoogleMap.MAP_TYPE_SATELLITE
-            R.id.hybrid_map -> map.mapType = GoogleMap.MAP_TYPE_HYBRID
-        }
-        return true
+    when (item.itemId) {
+    R.id.normal_map -> map.mapType = GoogleMap.MAP_TYPE_NORMAL
+    R.id.terrain_map -> map.mapType = GoogleMap.MAP_TYPE_TERRAIN
+    R.id.satelite_map -> map.mapType = GoogleMap.MAP_TYPE_SATELLITE
+    R.id.hybrid_map -> map.mapType = GoogleMap.MAP_TYPE_HYBRID
+    }
+    return true
     }
 
+     */
     fun setMapLongClick(gMap: GoogleMap) {
         gMap.setOnMapLongClickListener { latLng ->
             val snippet = String.format(
@@ -109,7 +120,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     fun setMapStyle(map: GoogleMap) {
         try {
             val success =
-                map.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.map_style))
+                map.setMapStyle(
+                    MapStyleOptions.loadRawResourceStyle(
+                        requireActivity(),
+                        R.raw.map_style
+                    )
+                )
 
             if (!success) {
                 Log.e(TAG, "Style parsing failed")
@@ -121,7 +137,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     fun isPermissionGranted(): Boolean {
         return ContextCompat.checkSelfPermission(
-            this,
+            requireActivity(),
             Manifest.permission.ACCESS_FINE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED
     }
@@ -132,7 +148,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         } else {
             ActivityCompat.requestPermissions(
-                this,
+                requireActivity(),
                 arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
                 REQUEST_FINE_LOCATION_CODE
             )
